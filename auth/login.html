@@ -46,7 +46,7 @@
         username: form.username.value.trim(),
         password: form.password.value.trim(),
       };
-
+      
       try {
         const res = await fetch("http://127.0.0.1:5000/api/auth/login", {
           method: "POST",
@@ -60,10 +60,8 @@
           msg.textContent = "✅ " + result.message;
           msg.className = "text-green-600 font-semibold text-center mt-4";
 
-          // Store token in localStorage
           localStorage.setItem("token", result.token);
 
-          // Redirect to dashboard after 1s
           setTimeout(() => {
             window.location.href = "../home.html";
           }, 1000);
@@ -72,6 +70,7 @@
           msg.className = "text-red-600 font-semibold text-center mt-4";
         }
       } catch (error) {
+        console.log(error);
         msg.textContent = "❌ Network error";
         msg.className = "text-red-600 font-semibold text-center mt-4";
       }
