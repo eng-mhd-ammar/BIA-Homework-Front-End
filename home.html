@@ -15,9 +15,9 @@
       <button id="uploadBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">
         + Upload New File
       </button>
-      <a href="auth/login.html" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">
-        Go To Login
-      </a>
+      <button id="logoutBtn" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-200">
+        Logout
+      </button>
     </div>
   </header>
 
@@ -47,6 +47,7 @@
     const tableList = document.getElementById("tableList");
     const msg = document.getElementById("msg");
     const uploadBtn = document.getElementById("uploadBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
     const uploadModal = document.getElementById("uploadModal");
     const closeModal = document.getElementById("closeModal");
     const uploadForm = document.getElementById("uploadForm");
@@ -61,6 +62,9 @@
         const res = await fetch(backend + "api/user-tables", {
           headers: { Authorization: `Bearer ${token}` },
         });
+
+        if(res.status == 401) window.location.href = "auth/login.html";
+
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to load tables");
         msg.textContent = "";
@@ -90,12 +94,20 @@
           <p><strong>Fitness:</strong> ${t.ga_result?.fitness?.toFixed(3) || "—"}</p>
           <p><strong>Selected Features:</strong> ${t.ga_result?.selected_features?.length || 0}</p>
         </div>
-        ${t.ga_result ? `<button onclick="viewGAResults(${t.ga_result.id})" 
-            class="mt-3 w-full bg-green-600 text-white py-1 rounded-lg hover:bg-green-700 text-sm">
+        ${t.ga_result ? `
+        <button onclick="viewTable(${t.id})" class="mt-2 w-full bg-blue-600 text-white py-1 rounded-lg hover:bg-blue-700 text-sm">
+            View Table Data
+        </button>
+        <button onclick="viewGAResults(${t.ga_result.id})" class="mt-3 w-full bg-green-600 text-white py-1 rounded-lg hover:bg-green-700 text-sm">
             View GA Results
         </button>` : ""}
       </div>
       `).join("");
+    }
+
+    function viewTable(tableId) {
+      localStorage.setItem("tableId", tableId);
+      window.location.href = "table_view.html";
     }
 
     function viewGAResults(gaResultId) {
@@ -105,6 +117,11 @@
 
     uploadBtn.addEventListener("click", () => {
       uploadModal.classList.remove("hidden");
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem('token');
+      window.location.href = "auth/login.html";
     });
 
     closeModal.addEventListener("click", () => {

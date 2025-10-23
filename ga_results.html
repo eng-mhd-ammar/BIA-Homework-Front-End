@@ -17,8 +17,10 @@
   <div id="gaInfo" class="mb-6">
   </div>
   <canvas id="gaChart" class="bg-white p-4 rounded-xl shadow"></canvas>
+<div id="gaTable" class="mt-6 overflow-x-auto">
+  <!-- Table of generations will be inserted here -->
+</div>
 </main>
-
 <script>
   const backend = "http://127.0.0.1:5000/";
   const token = localStorage.getItem("token");
@@ -37,6 +39,9 @@
       const res = await fetch(backend + "api/ga-results/" + gaResultId, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if(res.status == 401) window.location.href = "auth/login.html";
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load GA results");
 
@@ -81,9 +86,32 @@
       },
       options: { responsive: true, plugins: { legend: { position: 'top' } } }
     });
+
+    const gaTable = document.getElementById("gaTable");
+    let tableHTML = `
+      <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
+        <thead class="bg-indigo-600 text-white">
+          <tr>
+            <th class="px-4 py-2 text-left">Generation</th>
+            <th class="px-4 py-2 text-left">Best Fitness</th>
+            <th class="px-4 py-2 text-left">Average Fitness</th>
+            <th class="px-4 py-2 text-left">Best Genes</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.generations.map(g => `
+            <tr class="border-b">
+              <td class="px-4 py-2">${g.generation}</td>
+              <td class="px-4 py-2">${g.best_fitness}</td>
+              <td class="px-4 py-2">${g.avg_fitness}</td>
+              <td class="px-4 py-2"><p class="text-xs">${JSON.stringify(g.best_genes, null, 2)}</p></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+    gaTable.innerHTML = tableHTML;
   }
-
-
   fetchGAResult();
 </script>
 </body>
