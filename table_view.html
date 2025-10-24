@@ -1,71 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Table | MyApp</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
-        <h1 class="text-xl font-semibold" id="tableName">Table</h1>
-        <button onclick="window.history.back()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200">Back</button>
-    </header>
-
-    <main class="flex-1 p-6">
-        <div id="msg" class="text-center text-sm font-medium mb-4"></div>
-        <div class="overflow-x-auto">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>View Table | MyApp</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+   </head>
+   <body class="bg-gray-100 min-h-screen flex flex-col">
+      <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+         <h1 class="text-xl font-semibold" id="tableName">Table</h1>
+         <button onclick="window.history.back()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200">Back</button>
+      </header>
+      <main class="flex-1 p-6">
+         <div id="msg" class="text-center text-sm font-medium mb-4"></div>
+         <div class="overflow-x-auto">
             <table id="dataTable" class="min-w-full bg-white rounded-xl shadow overflow-hidden">
-                <thead class="bg-indigo-600 text-white" id="tableHead"></thead>
-                <tbody id="tableBody"></tbody>
+               <thead class="bg-indigo-600 text-white" id="tableHead"></thead>
+               <tbody id="tableBody"></tbody>
             </table>
-        </div>
-    </main>
-
-    <script>
-const backend = "http://127.0.0.1:5000/";
-const token = localStorage.getItem("token");
-if (!token) window.location.href = "auth/login.html";
-
-const tableId = localStorage.getItem("tableId");
-if (!tableId) {
-  alert("No table selected");
-  window.location.href = "my_tables.html";
-}
-
-async function fetchTable() {
-  const msg = document.getElementById("msg");
-  msg.textContent = "Loading table data...";
-  try {
-    const res = await fetch(`${backend}api/view-table/${tableId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to load table data");
-
-    msg.textContent = "";
-    renderTable(data);
-  } catch(err) {
-    msg.textContent = "❌ " + err.message;
-    msg.className = "text-red-600 font-semibold text-center mb-4";
-  }
-}
-
-function renderTable(data) {
-  document.getElementById("tableName").textContent = data.table_name;
-
-  const tableHead = document.getElementById("tableHead");
-  tableHead.innerHTML = `<tr>${data.columns.map(c => `<th class="px-4 py-2 text-left">${c}</th>`).join("")}</tr>`;
-
-  const tableBody = document.getElementById("tableBody");
-  tableBody.innerHTML = data.data.map(row => `
-    <tr class="border-b">
-      ${data.columns.map(col => `<td class="px-4 py-2">${row[col]}</td>`).join("")}
-    </tr>
-  `).join("");
-}
-
-fetchTable();
-</script>
-</body>
+         </div>
+      </main>
+      <script>
+         const backend = "http://127.0.0.1:5000/";
+         const token = localStorage.getItem("token");
+         if (!token) window.location.href = "auth/login.html";
+         
+         const tableId = localStorage.getItem("tableId");
+         if (!tableId) {
+           alert("No table selected");
+           window.location.href = "my_tables.html";
+         }
+         
+         async function fetchTable() {
+           const msg = document.getElementById("msg");
+           msg.textContent = "Loading table data...";
+           try {
+             const res = await fetch(`${backend}api/view-table/${tableId}`, {
+               headers: { Authorization: `Bearer ${token}` }
+             });
+             const data = await res.json();
+             if(res.status == 401) window.location.href = "auth/login.html";
+             if (!res.ok) throw new Error(data.error || "Failed to load table data");
+         
+             msg.textContent = "";
+             renderTable(data);
+           } catch(err) {
+             msg.textContent = "❌ " + err.message;
+             msg.className = "text-red-600 font-semibold text-center mb-4";
+           }
+         }
+         
+         function renderTable(data) {
+           document.getElementById("tableName").textContent = data.table_name;
+         
+           const tableHead = document.getElementById("tableHead");
+           tableHead.innerHTML = `
+             <tr>
+               <th class="px-4 py-2 text-left">#</th>
+               ${data.columns.map(c => `<th class="px-4 py-2 text-left">${c}</th>`).join("")}
+             </tr>
+           `;
+         
+           const tableBody = document.getElementById("tableBody");
+           tableBody.innerHTML = data.data.map((row, index) => `
+             <tr class="border-b">
+               <td class="px-4 py-2">${index + 1}</td>
+               ${data.columns.map(col => `<td class="px-4 py-2">${row[col]}</td>`).join("")}
+             </tr>
+           `).join("");
+         }
+         
+         fetchTable();
+      </script>
+   </body>
 </html>
