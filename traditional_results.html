@@ -1,94 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Traditional Algorithm Results | MyApp</title>
-      <script src="https://cdn.tailwindcss.com"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-   </head>
-   <body class="bg-gray-100 min-h-screen flex flex-col">
-      <!-- Header -->
-      <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
-         <h1 class="text-xl font-semibold">Traditional Algorithm Results ( Lasso Regression )</h1>
-         <button onclick="window.history.back()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200">Back</button>
-      </header>
-      <main class="flex-1 p-6">
-         <div id="msg" class="text-center text-sm font-medium mb-4"></div>
-         <div id="traditionalInfo" class="mb-6 bg-white p-6 rounded-xl shadow">
-         </div>
-         <canvas id="weightsChart" class="bg-white p-4 rounded-xl shadow"></canvas>
-      </main>
-      <script>
-         const backend = "http://127.0.0.1:5000/";
-         const token = localStorage.getItem("token");
-         if (!token) window.location.href = "auth/login.html";
-         
-         const tableId = localStorage.getItem("tableId");
-         if (!tableId) {
-           alert("No table selected");
-           window.location.href = "my_tables.html";
-         }
-         
-         async function fetchTraditionalResult() {
-           const msg = document.getElementById("msg");
-           msg.textContent = "Loading Traditional Algorithm results...";
-           try {
-             const res = await fetch(backend + "api/traditional-results/" + tableId, {
-               headers: { Authorization: `Bearer ${token}` },
-             });
-             if(res.status == 401) window.location.href = "auth/login.html";
-             const data = await res.json();
-             if (!res.ok) throw new Error(data.error || "Failed to load traditional results");
-         
-             msg.textContent = "";
-             renderTraditionalResults(data);
-           } catch (err) {
-             msg.textContent = "❌ " + err.message;
-             msg.className = "text-red-600 font-semibold text-center mb-4";
-           }
-         }
-         
-         function renderTraditionalResults(data) {
-           const traditionalInfo = document.getElementById("traditionalInfo");
-           traditionalInfo.innerHTML = `
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traditional Algorithm Results | MyApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+      <h1 class="text-xl font-semibold">Traditional Algorithm Results ( Lasso Regression )</h1>
+      <button onclick="window.history.back()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200">Back</button>
+    </header>
+    <main class="flex-1 p-6">
+      <div id="msg" class="text-center text-sm font-medium mb-4"></div>
+      <div id="traditionalInfo" class="mb-6 bg-white p-6 rounded-xl shadow">
+      </div>
+      <canvas id="weightsChart" class="bg-white p-4 rounded-xl shadow"></canvas>
+    </main>
+    <script>
+      const backend = "http://127.0.0.1:5000/";
+      const token = localStorage.getItem("token");
+      if (!token) window.location.href = "auth/login.html";
+      const tableId = localStorage.getItem("tableId");
+      if (!tableId) {
+        alert("No table selected");
+        window.location.href = "my_tables.html";
+      }
+      async function fetchTraditionalResult() {
+        const msg = document.getElementById("msg");
+        msg.textContent = "Loading Traditional Algorithm results...";
+        try {
+          const res = await fetch(backend + "api/traditional-results/" + tableId, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            },
+          });
+          if (res.status == 401) window.location.href = "auth/login.html";
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to load traditional results");
+          msg.textContent = "";
+          renderTraditionalResults(data);
+        } catch (err) {
+          msg.textContent = "❌ " + err.message;
+          msg.className = "text-red-600 font-semibold text-center mb-4";
+        }
+      }
+
+      function renderTraditionalResults(data) {
+        const traditionalInfo = document.getElementById("traditionalInfo");
+        traditionalInfo.innerHTML = `
              <p><strong>Best Chromosome:</strong> [${data.best_chromosome.join(", ")}]</p>
              <p><strong>Selected Features:</strong> [${data.selected_features.join(", ")}]</p>
              <p><strong>Feature Weights:</strong> [${data.feature_weights.map(w => w.toFixed(3)).join(", ")}]</p>
              <p><strong>Number of Features:</strong> ${data.best_chromosome.length}</p>
              <p><strong>Number of Selected Features:</strong> ${data.selected_features.length} / ${data.best_chromosome.length}</p>
            `;
-         
-           const ctx = document.getElementById('weightsChart').getContext('2d');
-           const labels = data.feature_weights.map((_, i) => `Feature ${i}`);
-           const weights = data.feature_weights.map(w => w.toFixed(3));
-         
-           new Chart(ctx, {
-             type: 'line',
-             data: {
-               labels,
-               datasets: [{
-                 label: 'Feature Weight',
-                 data: weights,
-                 borderColor: 'rgba(59, 130, 246, 1)',
-                 backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                 fill: true,
-                 tension: 0.3,
-                 pointRadius: 4,
-                 pointBackgroundColor: 'rgba(59, 130, 246, 1)'
-               }]
-             },
-             options: {
-               responsive: true,
-               plugins: { legend: { display: true, position: 'top' } },
-               scales: {
-                 y: { beginAtZero: true }
-               }
-             }
-           });
-         }
-         
-         fetchTraditionalResult();
-      </script>
-   </body>
+        const ctx = document.getElementById('weightsChart').getContext('2d');
+        const labels = data.feature_weights.map((_, i) => `Feature ${i}`);
+        const weights = data.feature_weights.map(w => w.toFixed(3));
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [{
+              label: "Feature Weight (Progression)",
+              data: weights,
+              borderColor: "blue",
+              fill: false,
+              tension: 0,
+              pointRadius: 3,
+              pointBackgroundColor: "blue"
+            }, ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top"
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+          },
+        });
+      }
+      fetchTraditionalResult();
+    </script>
+  </body>
+
 </html>
