@@ -23,8 +23,8 @@
         <!-- Table of generations will be inserted here -->
       </div>
     </main>
+    <script src="js/url.js"></script>
     <script>
-      const backend = "http://127.0.0.1:5000/";
       const token = localStorage.getItem("token");
       if (!token) window.location.href = "auth/login.html";
       const gaResultId = localStorage.getItem("gaResultId");
@@ -36,7 +36,7 @@
         const msg = document.getElementById("msg");
         msg.textContent = "Loading GA results...";
         try {
-          const res = await fetch(backend + "api/ga-results/" + gaResultId, {
+          const res = await fetch(`${url}/ga-results/{gaResultId}`, {
             headers: {
               Authorization: `Bearer ${token}`
             },
