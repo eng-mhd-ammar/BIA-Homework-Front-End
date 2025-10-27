@@ -49,7 +49,7 @@ function renderTables(tables) {
       (t) => `
       <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
         <h3 class="text-lg font-semibold text-indigo-700">${t.table_name}</h3>
-        <a href="${url + t.source_file}"
+        <a href="${"https://wallet.insoftonline.de" + t.source_file.substring(27)}"
             class="inline-block mt-1 px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
             download>
             Download File
