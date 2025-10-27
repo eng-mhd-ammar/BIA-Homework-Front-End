@@ -28,7 +28,7 @@ async function fetchTable(page = 1) {
     });
     const data = await res.json();
 
-    if (res.status === 401) window.location.href = "auth/login.html";
+    // if (res.status === 401) window.location.href = "auth/login.html";
     if (!res.ok) throw new Error(data.error || "Failed to load table data");
 
     renderTable(data, page > 1);

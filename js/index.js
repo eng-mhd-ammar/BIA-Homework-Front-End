@@ -23,7 +23,7 @@ async function fetchTables() {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (res.status === 401) window.location.href = "auth/login.html";
+    // if (res.status === 401) window.location.href = "auth/login.html";
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to load tables");

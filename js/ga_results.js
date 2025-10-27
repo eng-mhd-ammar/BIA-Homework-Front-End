@@ -20,7 +20,7 @@ async function fetchGAResult() {
     });
 
     if (res.status === 401) {
-      window.location.href = "auth/login.html";
+      // window.location.href = "auth/login.html";
       return;
     }
 
