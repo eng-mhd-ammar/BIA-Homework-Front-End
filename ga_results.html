@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GA Results | MyApp</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GA Results</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -12,130 +11,26 @@
   <body class="bg-gray-100 min-h-screen flex flex-col">
     <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
       <h1 class="text-xl font-semibold">Genetic Algorithm Results</h1>
-      <button onclick="window.history.back()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200">Back</button>
+      <button
+        onclick="window.history.back()"
+        class="bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-gray-200"
+      >
+        Back
+      </button>
     </header>
+
     <main class="flex-1 p-6">
       <div id="msg" class="text-center text-sm font-medium mb-4"></div>
-      <div id="gaInfo" class="mb-6">
+      <div id="loader" class="flex justify-center items-center mt-6 hidden">
+        <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
+
+      <div id="gaInfo" class="mb-6"></div>
       <canvas id="gaChart" class="bg-white p-4 rounded-xl shadow"></canvas>
-      <div id="gaTable" class="mt-6 overflow-x-auto">
-        <!-- Table of generations will be inserted here -->
-      </div>
+      <div id="gaTable" class="mt-6 overflow-x-auto"></div>
     </main>
+
     <script src="js/url.js"></script>
-    <script>
-      const token = localStorage.getItem("token");
-      if (!token) window.location.href = "auth/login.html";
-      const gaResultId = localStorage.getItem("gaResultId");
-      if (!gaResultId) {
-        alert("No GA result selected");
-        window.location.href = "my_tables.html";
-      }
-      async function fetchGAResult() {
-        const msg = document.getElementById("msg");
-        msg.textContent = "Loading GA results...";
-        try {
-          const res = await fetch(`${url}/ga-results/{gaResultId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`
-            },
-          });
-          if (res.status == 401) window.location.href = "auth/login.html";
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || "Failed to load GA results");
-          msg.textContent = "";
-          renderGAResults(data);
-        } catch (err) {
-          msg.textContent = "❌ " + err.message;
-          msg.className = "text-red-600 font-semibold text-center mb-4";
-        }
-      }
-
-      function renderGAResults(data) {
-        const gaInfo = document.getElementById("gaInfo");
-        gaInfo.innerHTML = `
-    <div class="bg-white p-6 rounded-xl shadow space-y-2">
-      <h2 class="text-lg font-semibold text-indigo-700 mb-2">Summary</h2>
-      <p><strong>Best Overall Fitness:</strong> ${data.fitness}</p>
-      <p><strong>Total Generations:</strong> ${data.summary.total_generations}</p>
-      <p><strong>Average Fitness Across Generations:</strong> ${data.summary.avg_of_avgs}</p>
-      <p><strong>Selected Features:</strong> ${data.selected_features.join(", ")}</p>
-
-      <h3 class="text-md font-semibold mt-4 text-indigo-700">Best Chromosome:</h3>
-      <p class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">${JSON.stringify(data.best_chromosome, null, 2)}</p>
-    </div>
-  `;
-        const ctx = document.getElementById("gaChart").getContext("2d");
-        const labels = data.generations.map((g) => "Gen " + g.generation);
-        const bestOverallProgress = data.generations.map(
-          (g) => g.progressions[g.progressions.length - 1]?.best_overall_fitness || 0
-        );
-        const generationBestProgress = data.generations.map(
-          (g) => g.progressions[g.progressions.length - 1]?.generation_best_fitness || 0
-        );
-        const avgFitness = data.generations.map((g) => g.avg_fitness);
-        new Chart(ctx, {
-          type: "line",
-          data: {
-            labels,
-            datasets: [{
-                label: "Generation Best (Progression)",
-                data: generationBestProgress,
-                borderColor: "blue",
-                fill: false
-              },
-              {
-                label: "Average Fitness",
-                data: avgFitness,
-                borderColor: "orange",
-                fill: false
-              },
-              {
-                label: "Best Overall (Progression)",
-                data: bestOverallProgress,
-                borderColor: "green",
-                borderDash: [5, 5],
-                fill: false
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top"
-              }
-            }
-          },
-        });
-        const gaTable = document.getElementById("gaTable");
-        let tableHTML = `
-             <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
-               <thead class="bg-indigo-600 text-white">
-                 <tr>
-                   <th class="px-4 py-2 text-left">Generation</th>
-                   <th class="px-4 py-2 text-left">Best Fitness</th>
-                   <th class="px-4 py-2 text-left">Average Fitness</th>
-                   <th class="px-4 py-2 text-left">Best Genes</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 ${data.generations.map(g => `
-                   <tr class="border-b">
-                     <td class="px-4 py-2">${g.generation}</td>
-                     <td class="px-4 py-2">${g.best_fitness}</td>
-                     <td class="px-4 py-2">${g.avg_fitness}</td>
-                     <td class="px-4 py-2"><p class="text-xs">${JSON.stringify(g.best_genes, null, 2)}</p></td>
-                   </tr>
-                 `).join("")}
-               </tbody>
-             </table>
-           `;
-        gaTable.innerHTML = tableHTML;
-      }
-      fetchGAResult();
-    </script>
+    <script src="js/ga_results.js"></script>
   </body>
-
 </html>
